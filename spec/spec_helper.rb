@@ -1,14 +1,18 @@
 require 'rubygems'
 require 'pathname'
-require Pathname(__FILE__).dirname.expand_path.parent + 'lib/dm-timeline'
- 
+
+gem 'dm-core', '>=0.9.1'
+require 'data_mapper'
+
+spec_dir_path = Pathname(__FILE__).dirname.expand_path
+
 def load_driver(name, default_uri)
   return false if ENV['ADAPTER'] != name.to_s
  
   lib = "do_#{name}"
  
   begin
-    gem lib, '=0.0.1'
+    gem lib, '>=0.9.1'
     require lib
     DataMapper.setup(name, ENV["#{name.to_s.upcase}_SPEC_URI"] || default_uri)
     DataMapper::Repository.adapters[:default] =  DataMapper::Repository.adapters[name]
@@ -24,7 +28,14 @@ def load_driver(name, default_uri)
 end
  
 ENV['ADAPTER'] ||= 'sqlite3'
+
 LOG_PATH     = Pathname(__FILE__).dirname.expand_path.to_s + '/sql.log'
 HAS_SQLITE3  = load_driver(:sqlite3,  'sqlite3::memory:')
 HAS_MYSQL    = load_driver(:mysql,    'mysql://localhost/dm_core_test')
 HAS_POSTGRES = load_driver(:postgres, 'postgres://postgres@localhost/dm_core_test')
+
+require spec_dir_path.parent + 'lib/dm-timeline'
+
+Dir[spec_dir_path + "fixtures/*.rb"].each do |fixture_file|
+  require fixture_file
+end
