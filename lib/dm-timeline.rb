@@ -1,6 +1,6 @@
 require 'rubygems'
 gem 'dm-core', '>=0.9.1'
-require 'data_mapper'
+require 'dm-core'
 
 module DataMapper
   module Timeline
@@ -23,8 +23,7 @@ module DataMapper
     module ClassMethods
       def is_on_timeline
 
-        property :revision,   Integer,  :key => true, :default => 1
-        property :valid_from, DateTime, :default => DateTime.now
+        property :valid_from, DateTime, :default => DateTime.now, :nullable => true
         property :valid_to,   DateTime
 
         include DataMapper::Timeline::InstanceMethods
@@ -32,22 +31,27 @@ module DataMapper
         alias_method :save_without_timeline, :save
         alias_method :save, :save_with_timeline
 
-        DataMapper::Repository.extend(RepositoryMethods)
-      end
+        class << self
+          def all_with_timeline(query = {})
+            if Hash === query && query.has_key?(:at)
+              conditions = query.delete(:at)
+            end
+            
+            unless conditions
+              conditions = [DateTime.now, DateTime.now + 1]
+            end
+            
+            all_without_timeline(query.merge(:valid_from.lte => conditions.first, :valid_to.gt => conditions.last))
+          end
 
+          def first_with_timeline(options = {})
+            first_without_timeline(options)
+          end
+
+          alias_method :all_without_timeline, :all
+          alias_method :all, :all_with_timeline
+        end
+      end
     end
-
-    module RepositoryMethods
-
-      def all_with_timeline(model, options)
-        all_without_timeline(model, options)
-      end
-
-      def first_with_timeline(model, options)
-        first_without_timeline(model, options)
-      end
-
-    end
-
   end
 end
