@@ -86,7 +86,7 @@ describe "DataMapper::Timeline" do
     stable.cows << Cow.new(:name => "Cindy 1")
     stable.cows << Cow.new(:name => "Cindy 2")
     stable.save
-    
+
     stable.cows.all(:at => [Date.today, Date.today + 100]).length.should == 2
     stable.cows.all(:at => [nil, Date.today]).length.should == 0
   end
