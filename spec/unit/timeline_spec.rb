@@ -91,4 +91,17 @@ describe "DataMapper::Timeline" do
     stable.cows.all(:at => [nil, Date.today]).length.should == 0
   end
 
+  it "should be able to find related objects with the same timeline as the parent object" do
+    s = Stable.create(:location => "Kentucky Chicken Farm", :valid_from => Date.today - 100, :valid_to => Date.today - 50)
+    Cow.create(:name => "Cindy 1", :stable_id => s.id)
+    Cow.create(:name => "Cindy 2", :stable_id => s.id)
+
+    stables = Stable.all(:at => Date.today - 75)
+    stables.at.should be_instance_of(Array)
+    stables.each do |s|
+      s.cows.length.should == 0
+    end
+
+  end
+
 end
