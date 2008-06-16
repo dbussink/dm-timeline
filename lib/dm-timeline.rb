@@ -78,7 +78,7 @@ module DataMapper
         if conditions.length < 2 || conditions.first == conditions.last
           {:valid_from.lte => conditions.last, :valid_to.gte => conditions.first}
         else
-          {:valid_from.lte => conditions.last, :valid_to.gte => conditions.first}
+          {:valid_from.lt => conditions.last, :valid_to.gte => conditions.first}
         end
 
       end
